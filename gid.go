@@ -12,9 +12,9 @@ import (
 const (
 	epoch int64 = 1136185445000
 
-	timestampBits uint8 = 42 // 时间戳所占位数
-	machineBits   uint8 = 10 // 机器 ID 所占位数
-	sequenceBits  uint8 = 12 // 序列号所占位数
+	//timestampBits uint8 = 42 // 时间戳所占位数
+	machineBits  uint8 = 10 // 机器 ID 所占位数
+	sequenceBits uint8 = 12 // 序列号所占位数
 
 	maxMachineID int64 = -1 ^ (-1 << machineBits)
 	maxSequence  int64 = -1 ^ (-1 << sequenceBits)
