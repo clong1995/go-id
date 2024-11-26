@@ -2,6 +2,9 @@ package gid
 
 import (
 	"fmt"
+	"github.com/clong1995/go-config"
+	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -23,53 +26,60 @@ const (
 	machineShift   = sequenceBits
 )
 
+var id *gid
+
+func init() {
+	machineID := config.Value("MACHINE ID")
+	if machineID == "" {
+		log.Fatalln("MACHINE ID not found")
+	}
+	atoi, err := strconv.Atoi(machineID)
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	if id, err = newId(atoi); err != nil {
+		log.Fatalln(err)
+	}
+	log.Printf("gid created %s success\n", machineID)
+}
+
 // Gid 结构体
-type Gid struct {
+type gid struct {
 	mu        sync.Mutex
 	lastStamp int64
 	sequence  int64
 	machineID int64
 }
 
-// NewId 初始化
-func NewId(machineID int64) (*Gid, error) {
-	if machineID < 0 || machineID > maxMachineID {
-		return nil, fmt.Errorf("machine ID must be between 0 and %d", maxMachineID)
-	}
-	return &Gid{
-		lastStamp: 0,
-		sequence:  0,
-		machineID: machineID,
-	}, nil
-}
-
 // Generate 生成唯一 ID
-func (s *Gid) Generate() uint64 {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func Generate() uint64 {
+	id.mu.Lock()
+	defer id.mu.Unlock()
 
 	now := currentMillis()
 
-	if now == s.lastStamp {
-		s.sequence = (s.sequence + 1) & maxSequence
-		if s.sequence == 0 {
-			now = nextMillis(s.lastStamp)
+	if now == id.lastStamp {
+		id.sequence = (id.sequence + 1) & maxSequence
+		if id.sequence == 0 {
+			now = nextMillis(id.lastStamp)
 		}
 	} else {
-		s.sequence = 0
+		id.sequence = 0
 	}
 
-	s.lastStamp = now
+	id.lastStamp = now
 
-	id := ((now - epoch) << timestampShift) |
-		(s.machineID << machineShift) |
-		s.sequence
+	i := ((now - epoch) << timestampShift) |
+		(id.machineID << machineShift) |
+		id.sequence
 
-	return uint64(id)
+	return uint64(i)
 }
 
 // Extract 提取ID的时间戳、机器ID和序列号
-func (s *Gid) Extract(id int64) (timestamp int64, machineID int64, sequence int64) {
+func Extract(id int64) (timestamp int64, machineID int64, sequence int64) {
 	timestamp = (id >> timestampShift) + epoch
 	machineID = (id >> machineShift) & maxMachineID
 	sequence = id & maxSequence
@@ -77,12 +87,23 @@ func (s *Gid) Extract(id int64) (timestamp int64, machineID int64, sequence int6
 }
 
 // Deterministic 直接生成特定时间和机器ID的ID
-func (s *Gid) Deterministic(timestamp int64) (uint64, error) {
+func Deterministic(timestamp int64) (uint64, error) {
 	if timestamp < epoch {
 		return 0, fmt.Errorf("timestamp must be greater than or equal to the epoch: %d", epoch)
 	}
-	id := ((timestamp - epoch) << timestampShift) | (s.machineID << machineShift)
-	return uint64(id), nil
+	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
+	return uint64(i), nil
+}
+
+func newId(machineID int) (*gid, error) {
+	if machineID < 0 || int64(machineID) > maxMachineID {
+		return nil, fmt.Errorf("machine ID must be between 0 and %d", maxMachineID)
+	}
+	return &gid{
+		lastStamp: 0,
+		sequence:  0,
+		machineID: int64(machineID),
+	}, nil
 }
 
 // 当前毫秒时间戳
