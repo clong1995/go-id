@@ -19,7 +19,7 @@ const (
 	machineBits  uint8 = 10
 	sequenceBits uint8 = 12
 
-	maxMachineID int64 = -1 ^ (-1 << machineBits)
+	maxMachineID int   = -1 ^ (-1 << machineBits)
 	maxSequence  int64 = -1 ^ (-1 << sequenceBits)
 
 	timestampShift = machineBits + sequenceBits
@@ -79,10 +79,10 @@ func Generate() uint64 {
 }
 
 // Extract 提取ID的时间戳、机器ID和序列号
-func Extract(id int64) (timestamp int64, machineID int64, sequence int64) {
-	timestamp = (id >> timestampShift) + epoch
-	machineID = (id >> machineShift) & maxMachineID
-	sequence = id & maxSequence
+func Extract(id uint64) (timestamp int64, machineID int, sequence int64) {
+	timestamp = int64(id>>timestampShift) + epoch
+	machineID = int((id >> machineShift) & uint64(maxMachineID))
+	sequence = int64(id & uint64(maxSequence))
 	return timestamp, machineID, sequence
 }
 
@@ -96,7 +96,7 @@ func Deterministic(timestamp int64) (uint64, error) {
 }
 
 func newId(machineID int) (*gid, error) {
-	if machineID < 0 || int64(machineID) > maxMachineID {
+	if machineID < 0 || machineID > maxMachineID {
 		return nil, fmt.Errorf("machine ID must be between 0 and %d", maxMachineID)
 	}
 	return &gid{
