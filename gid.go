@@ -5,7 +5,7 @@ import (
 	"github.com/clong1995/go-config"
 	"log"
 	"strconv"
-	"sync/atomic"
+	"sync"
 	"time"
 )
 
@@ -47,6 +47,7 @@ func init() {
 
 // Gid 结构体
 type gid struct {
+	mu        sync.Mutex
 	lastStamp int64
 	sequence  int64
 	machineID int64
@@ -54,10 +55,13 @@ type gid struct {
 
 // Generate 生成唯一 ID
 func Generate() int64 {
+	id.mu.Lock()
+	defer id.mu.Unlock()
+
 	now := currentMillis()
 
-	if now == atomic.LoadInt64(&id.lastStamp) {
-		id.sequence = atomic.AddInt64(&id.sequence, 1) & maxSequence
+	if now == id.lastStamp {
+		id.sequence = (id.sequence + 1) & maxSequence
 		if id.sequence == 0 {
 			now = nextMillis(id.lastStamp)
 		}
@@ -65,7 +69,7 @@ func Generate() int64 {
 		id.sequence = 0
 	}
 
-	atomic.StoreInt64(&id.lastStamp, now)
+	id.lastStamp = now
 
 	i := ((now - epoch) << timestampShift) |
 		(id.machineID << machineShift) |

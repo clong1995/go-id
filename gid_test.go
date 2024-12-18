@@ -17,7 +17,7 @@ func TestDeterministic(t *testing.T) {
 		{
 			name: "直接生成特定时间和机器ID的ID",
 			args: args{
-				timestamp: 1734504923420,
+				timestamp: 1734506945677,
 			},
 		},
 	}
@@ -44,7 +44,7 @@ func TestExtract(t *testing.T) {
 		{
 			name: "提取ID的时间戳、机器ID和序列号",
 			args: args{
-				id: 156845861350936576,
+				id: 156846391473475584,
 			},
 		},
 	}
