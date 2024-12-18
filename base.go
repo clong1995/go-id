@@ -2,19 +2,19 @@ package gid
 
 var (
 	chars = [256]rune{}
-	maps  = make(map[rune]uint64, 256)
+	maps  = make(map[rune]int64, 256)
 )
 
 func init() {
 	base := []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~¬±§¶©®™¥€£₹¢ªº∆∇∈∉∩∪∑∏∫√∂∞∝∧∨⊂⊃⊆⊇⊥⊤⊕⊗⊘⊙⊛⊝⊞⊟⊠⊡⊢⊣∅ℵαβγδεζηθικλμνξοπρστυφχψωΘΛΣΨΩℜ∐Ⅎ⅄ⅅⅆⅇⅈⅉ⅊⅋⅌⅍ⅎ⅏ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿ❍✔⚲⚶⊚⊜⊻⏠⏡⏦⏧⏼⏽⏿␀␁␂␃␄␅␆␇⏚⏛⏜⏝⏞⏟⏣␈␉␊␋␌␍␎␏␐␑")
 	for i, v := range base {
 		chars[i] = v
-		maps[v] = uint64(i)
+		maps[v] = int64(i)
 	}
 }
 
 // Encode 编码
-func Encode(num uint64) string {
+func Encode(num int64) string {
 	if num == 0 {
 		return string(chars[0])
 	}
@@ -36,8 +36,8 @@ func Encode(num uint64) string {
 }
 
 // Decode 解码函数
-func Decode(encoded string) uint64 {
-	var result uint64
+func Decode(encoded string) int64 {
+	var result int64
 	for _, char := range encoded {
 		result = result<<8 | maps[char]
 	}
