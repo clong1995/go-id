@@ -19,7 +19,7 @@ const (
 	machineBits  uint8 = 6
 	sequenceBits uint8 = 12
 
-	maxMachineID int   = -1 ^ (-1 << machineBits)
+	maxMachineID int64 = -1 ^ (-1 << machineBits)
 	maxSequence  int64 = -1 ^ (-1 << sequenceBits)
 
 	timestampShift = machineBits + sequenceBits
@@ -33,13 +33,13 @@ func init() {
 	if machineID == "" {
 		log.Fatalln("MACHINE ID not found")
 	}
-	atoi, err := strconv.Atoi(machineID)
+	mid, err := strconv.ParseInt(machineID, 10, 64)
 	if err != nil {
 		log.Fatalln(err)
 		return
 	}
 
-	if id, err = newId(atoi); err != nil {
+	if id, err = newId(mid); err != nil {
 		log.Fatalln(err)
 	}
 	log.Printf("gid created %s success\n", machineID)
@@ -77,7 +77,7 @@ func Generate() int64 {
 // Extract 提取ID的时间戳、机器ID和序列号
 func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
 	timestamp = id>>timestampShift + epoch
-	machineID = int((id >> machineShift) & int64(maxMachineID))
+	machineID = int((id >> machineShift) & maxMachineID)
 	sequence = id & maxSequence
 	return timestamp, machineID, sequence
 }
@@ -91,14 +91,14 @@ func Deterministic(timestamp int64) (int64, error) {
 	return i, nil
 }
 
-func newId(machineID int) (*gid, error) {
+func newId(machineID int64) (*gid, error) {
 	if machineID < 0 || machineID > maxMachineID {
 		return nil, fmt.Errorf("machine ID must be between 0 and %d", maxMachineID)
 	}
 	return &gid{
 		lastStamp: 0,
 		sequence:  0,
-		machineID: int64(machineID),
+		machineID: machineID,
 	}, nil
 }
 
