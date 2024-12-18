@@ -5,18 +5,18 @@ import (
 	"github.com/clong1995/go-config"
 	"log"
 	"strconv"
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
 //id的结构
-//| 42 bits - 时间戳部分 | 10 bits - 机器 ID 部分 | 12 bits - 序列号部分 |
+//| 46 bits - 时间戳部分 | 6 bits - 机器 ID 部分 | 12 bits - 序列号部分 |
 
 const (
 	epoch int64 = 1136185445000
 
 	//timestampBits uint8 = 42
-	machineBits  uint8 = 10
+	machineBits  uint8 = 6
 	sequenceBits uint8 = 12
 
 	maxMachineID int   = -1 ^ (-1 << machineBits)
@@ -47,21 +47,17 @@ func init() {
 
 // Gid 结构体
 type gid struct {
-	mu        sync.Mutex
 	lastStamp int64
 	sequence  int64
 	machineID int64
 }
 
 // Generate 生成唯一 ID
-func Generate() uint64 {
-	id.mu.Lock()
-	defer id.mu.Unlock()
-
+func Generate() int64 {
 	now := currentMillis()
 
-	if now == id.lastStamp {
-		id.sequence = (id.sequence + 1) & maxSequence
+	if now == atomic.LoadInt64(&id.lastStamp) {
+		id.sequence = atomic.AddInt64(&id.sequence, 1) & maxSequence
 		if id.sequence == 0 {
 			now = nextMillis(id.lastStamp)
 		}
@@ -69,30 +65,30 @@ func Generate() uint64 {
 		id.sequence = 0
 	}
 
-	id.lastStamp = now
+	atomic.StoreInt64(&id.lastStamp, now)
 
 	i := ((now - epoch) << timestampShift) |
 		(id.machineID << machineShift) |
 		id.sequence
 
-	return uint64(i)
+	return i
 }
 
 // Extract 提取ID的时间戳、机器ID和序列号
-func Extract(id uint64) (timestamp int64, machineID int, sequence int64) {
-	timestamp = int64(id>>timestampShift) + epoch
-	machineID = int((id >> machineShift) & uint64(maxMachineID))
-	sequence = int64(id & uint64(maxSequence))
+func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
+	timestamp = id>>timestampShift + epoch
+	machineID = int((id >> machineShift) & int64(maxMachineID))
+	sequence = id & maxSequence
 	return timestamp, machineID, sequence
 }
 
 // Deterministic 直接生成特定时间和机器ID的ID
-func Deterministic(timestamp int64) (uint64, error) {
+func Deterministic(timestamp int64) (int64, error) {
 	if timestamp < epoch {
 		return 0, fmt.Errorf("timestamp must be greater than or equal to the epoch: %d", epoch)
 	}
 	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
-	return uint64(i), nil
+	return i, nil
 }
 
 func newId(machineID int) (*gid, error) {

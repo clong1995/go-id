@@ -17,8 +17,7 @@ func TestDeterministic(t *testing.T) {
 		{
 			name: "直接生成特定时间和机器ID的ID",
 			args: args{
-				timestamp: 1704038400000,
-				//timestamp: 1732597529207,
+				timestamp: 1734504548676,
 			},
 		},
 	}
@@ -36,7 +35,7 @@ func TestDeterministic(t *testing.T) {
 
 func TestExtract(t *testing.T) {
 	type args struct {
-		id uint64
+		id int64
 	}
 	tests := []struct {
 		name string
@@ -45,7 +44,7 @@ func TestExtract(t *testing.T) {
 		{
 			name: "提取ID的时间戳、机器ID和序列号",
 			args: args{
-				id: 2501533590437761024,
+				id: 156845763114045440,
 			},
 		},
 	}

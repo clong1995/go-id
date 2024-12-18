@@ -13,7 +13,7 @@ func TestEncode(t *testing.T) {
 		{
 			name: "编码",
 			args: args{
-				num: 2501138846842884096,
+				num: 156845763114045440,
 			},
 		},
 	}
@@ -36,7 +36,7 @@ func TestDecode(t *testing.T) {
 		{
 			name: "解码",
 			args: args{
-				encoded: "y⅌ⅻ⊠θ0g0",
+				encoded: "2JW¥␌⏛g0",
 			},
 		},
 	}

@@ -1,7 +1,5 @@
 package gid
 
-import "strings"
-
 var (
 	chars = [256]rune{}
 	maps  = make(map[rune]uint64, 256)
@@ -17,21 +15,31 @@ func init() {
 
 // Encode 编码
 func Encode(num uint64) string {
-	var builder strings.Builder
-	for i := 7; i >= 0; i-- {
-		byteValue := byte((num >> (i * 8)) & 0xFF)
-		builder.WriteRune(chars[byteValue])
+	if num == 0 {
+		return string(chars[0])
 	}
-	return builder.String()
+
+	var result [8]rune
+	index := 0
+
+	for num > 0 {
+		result[index] = chars[num&0xFF]
+		num >>= 8
+		index++
+	}
+
+	for i, j := 0, index-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return string(result[:index])
 }
 
 // Decode 解码函数
 func Decode(encoded string) uint64 {
 	var result uint64
-	runes := []rune(encoded)
-	for i, char := range runes {
-		byteValue := maps[char]
-		result |= byteValue << (uint64(7-i) * 8)
+	for _, char := range encoded {
+		result = result<<8 | maps[char]
 	}
 	return result
 }
