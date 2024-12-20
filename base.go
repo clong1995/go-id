@@ -35,7 +35,7 @@ func Encode(num int64) string {
 	return string(result[:index])
 }
 
-// Decode 解码函数
+// Decode 解码
 func Decode(encoded string) (result int64) {
 	runes := []rune(encoded)
 	isXor := len(runes) > 8
@@ -61,7 +61,7 @@ func Decode(encoded string) (result int64) {
 	return result
 }
 
-// EncodeNoXor 编码
+// EncodeNoXor 非xor编码
 func EncodeNoXor(num int64) string {
 	if num == 0 {
 		return string(chars[0])

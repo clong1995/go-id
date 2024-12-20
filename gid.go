@@ -10,7 +10,7 @@ import (
 )
 
 //id的结构
-//| 46 bits - 时间戳部分 | 6 bits - 机器 ID 部分 | 12 bits - 序列号部分 |
+//| 46 bits - 时间戳部分 | 6 bits - 机器ID部分 | 12 bits - 序列号部分 |
 
 const (
 	epoch int64 = 1136185445000
@@ -53,7 +53,7 @@ type gid struct {
 	machineID int64
 }
 
-// Generate 生成唯一 ID
+// Generate 生成唯一ID
 func Generate() int64 {
 	id.mu.Lock()
 	defer id.mu.Unlock()
