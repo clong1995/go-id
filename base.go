@@ -23,37 +23,6 @@ func Encode(num int64) string {
 	if num == 0 {
 		return string(chars[0])
 	}
-	var result [8]rune
-	index := 0
-	for num > 0 {
-		result[index] = chars[num&0xFF]
-		num >>= 8
-		index++
-	}
-	return string(result[:index])
-}
-
-// Decode 解码函数
-func Decode(encoded string) (result int64) {
-	if len(encoded) > 8 { //xor
-		return DecodeXor(encoded)
-	}
-
-	runes := []rune(encoded)
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-	for _, char := range runes {
-		result = result<<8 | maps[char]
-	}
-	return result
-}
-
-// EncodeXor 编码
-func EncodeXor(num int64) string {
-	if num == 0 {
-		return string(chars[0])
-	}
 	xor := xorKey()
 	result := [9]rune{chars[xor]}
 	index := 1
@@ -66,20 +35,45 @@ func EncodeXor(num int64) string {
 	return string(result[:index])
 }
 
-// DecodeXor 解码函数
-func DecodeXor(encoded string) (result int64) {
+// Decode 解码函数
+func Decode(encoded string) (result int64) {
 	runes := []rune(encoded)
-	xor := maps[runes[0]]
-	runes = runes[1:]
+	isXor := len(runes) > 8
+	var xor int64
+	if isXor {
+		xor = maps[runes[0]]
+		runes = runes[1:]
+	}
+
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
-	for _, char := range runes {
-		encodedByte := maps[char]
-		encodedByte = encodedByte ^ xor
-		result = result<<8 | encodedByte
+
+	if isXor {
+		for _, char := range runes {
+			result = result<<8 | maps[char] ^ xor
+		}
+	} else {
+		for _, char := range runes {
+			result = result<<8 | maps[char]
+		}
 	}
 	return result
+}
+
+// EncodeNoXor 编码
+func EncodeNoXor(num int64) string {
+	if num == 0 {
+		return string(chars[0])
+	}
+	var result [8]rune
+	index := 0
+	for num > 0 {
+		result[index] = chars[num&0xFF]
+		num >>= 8
+		index++
+	}
+	return string(result[:index])
 }
 
 func xorKey() (key int64) {
