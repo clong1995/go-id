@@ -11,7 +11,7 @@ var (
 )
 
 func init() {
-	base := []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&'()*+,-./:;<=>?@[]^_`{|}~¬±§¶©®™¥€£₹¢ªº∆∇∈∉∩∪∑∏∫√∂∞∝∧∨⊂⊃⊆⊇⊥⊤⊕⊗⊘⊙⊛⊝⊞⊟⊠⊡⊢⊣∅ℵαβγδεζηθικλμνξοπρστυφχψωΘΛΣΨΩℜ∐Ⅎ⅄ⅅⅆⅇⅈⅉ⅊⅋⅌⅍ⅎ⅏ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿ❍✔⚲⚶⊚⊜⊻⏠⏡⏦⏧⏼⏽⏿␀␁␂␃␄␅␆␇⏚⏛⏜⏝⏞⏟⏣␈␉␊␋␌␍␎␏␐␑")
+	base := []rune("0a¢ªº⊘b⊛⊝JKLMNOn=>pCDoEFqlmGH⊙IRST;<UVW/:`yzA3B45ef@]g[hcdk?^_1⊟2ij6789⊞PQ{|}~X§Y⊠Z!#$£₹rstuv®wx⊡⊢⊣∅ℵα%&'()*+,-.¬±∉∩€β␏γδεζηθι™¥⊆⊇⊥⊤⊕␎␐¶©Ⅷ␁∪Ⅸℜ∐Ⅎ⅄ⅅⅆⅇⅈⅉ⊗πρσ∂∞τ␍␑υφξο∇∈∑∏∫√∝∧∨⊂Ⅳ␌⏛∆ⅤχψωΘΛΣ⚲Ψ⊃ΩⅡ␇⏞Ⅲλ⏦μνⅥ⏝⚶Ⅶ⏚⏟␉ⅾ⏼⏽␃ⅻⅼⅽⅿ❍✔⊜␊ⅶ␂ⅷ⅌⅍ⅸ⏜ⅹⅺⅬⅭⅫ␅Ⅾ␋⅊⅋ⅎ⅏ⅠⅩ⊚Ⅺ␄⏣␈ⅵⅯⅰ⏿␀␆ⅱⅲ⏡ⅳⅴ⊻⏠⏧")
 	for i, v := range base {
 		chars[i] = v
 		maps[v] = int64(i)
@@ -24,7 +24,7 @@ func Encode(num int64) string {
 		return string(chars[0])
 	}
 	xor := xorKey()
-	result := [9]rune{chars[xor]}
+	result := [9]rune{chars[xor+1]}
 	index := 1
 	for num > 0 {
 		encodedByte := num&0xFF ^ xor
@@ -41,7 +41,7 @@ func Decode(encoded string) (result int64) {
 	isXor := len(runes) > 8
 	var xor int64
 	if isXor {
-		xor = maps[runes[0]]
+		xor = maps[runes[0]] - 1
 		runes = runes[1:]
 	}
 
@@ -79,6 +79,6 @@ func EncodeNoXor(num int64) string {
 func xorKey() (key int64) {
 	randSource := rand.NewSource(time.Now().UnixNano())
 	randGen := rand.New(randSource)
-	key = int64(randGen.Intn(256))
+	key = int64(randGen.Intn(255))
 	return
 }
