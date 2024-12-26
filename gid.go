@@ -42,7 +42,7 @@ func init() {
 	if id, err = newId(mid); err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("gid created %s success\n", machineID)
+	fmt.Printf("gid created %s success\n", machineID)
 }
 
 // Gid 结构体
