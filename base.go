@@ -19,10 +19,18 @@ func init() { //
 }
 
 // Encode 编码
-func Encode(num int64) string {
-	if num == 0 {
-		return string(chars[0])
+func Encode(num int64, salt ...int64) string {
+	var s int64
+	if len(salt) != 0 && salt[0] != 0 {
+		s = salt[0]
 	}
+
+	if num == 0 && s == 0 {
+		return ""
+	}
+
+	num += s
+
 	xor := xorKey()
 	result := [9]rune{chars[xor+1]}
 	index := 1
@@ -33,14 +41,6 @@ func Encode(num int64) string {
 		index++
 	}
 	return string(result[:index])
-}
-
-// EncodeId 使用id加密
-func EncodeId(num, uid int64) string {
-	if num == 0 && uid == 0 {
-		return string(chars[0])
-	}
-	return Encode(num + uid)
 }
 
 // EncodeNoXor 非xor编码
@@ -59,7 +59,16 @@ func EncodeNoXor(num int64) string {
 }
 
 // Decode 解码
-func Decode(encoded string) (result int64) {
+func Decode(encoded string, salt ...int64) int64 {
+	if encoded == "" {
+		return 0
+	}
+
+	var s int64
+	if len(salt) != 0 && salt[0] != 0 {
+		s = salt[0]
+	}
+
 	runes := []rune(encoded)
 	isXor := len(runes) > 8
 	var xor int64
@@ -72,6 +81,8 @@ func Decode(encoded string) (result int64) {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
+	var result int64
+
 	if isXor {
 		for _, char := range runes {
 			result = result<<8 | maps[char] ^ xor
@@ -81,21 +92,14 @@ func Decode(encoded string) (result int64) {
 			result = result<<8 | maps[char]
 		}
 	}
-	return
+
+	result -= s
+
+	return result
 }
 
-// DecodeId 使用id解密
-func DecodeId(encoded string, uid int64) (result int64) {
-	dId := Decode(encoded)
-	//提取最高位
-	//highestDigit := int64(float64(dId) / math.Pow10(int(math.Log10(float64(dId))))) // 用 log10 计算位数，再除以 10 的次幂
-	result = dId - uid
-	return
-}
-
-func xorKey() (key int64) {
+func xorKey() int64 {
 	randSource := rand.NewSource(time.Now().UnixNano())
 	randGen := rand.New(randSource)
-	key = int64(randGen.Intn(255))
-	return
+	return int64(randGen.Intn(255))
 }

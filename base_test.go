@@ -4,7 +4,8 @@ import "testing"
 
 func TestEncode(t *testing.T) {
 	type args struct {
-		num int64
+		num  int64
+		salt []int64
 	}
 	tests := []struct {
 		name string
@@ -13,13 +14,14 @@ func TestEncode(t *testing.T) {
 		{
 			name: "编码",
 			args: args{
-				num: 157073671531581440,
+				num:  157073671531581440,
+				salt: []int64{157073571532583540},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Encode(tt.args.num)
+			got := Encode(tt.args.num, tt.args.salt...)
 			t.Logf("Encode() = %v", got)
 		})
 	}
@@ -28,6 +30,7 @@ func TestEncode(t *testing.T) {
 func TestDecode(t *testing.T) {
 	type args struct {
 		encoded string
+		salt    []int64
 	}
 	tests := []struct {
 		name string
@@ -36,13 +39,14 @@ func TestDecode(t *testing.T) {
 		{
 			name: "解码",
 			args: args{
-				encoded: "76ⅇγP⏣⦙,i", //157073671531581440
+				encoded: "ηOδδωk(⌂™", //157073671531581440
+				salt:    []int64{157073571532583540},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Decode(tt.args.encoded)
+			got := Decode(tt.args.encoded, tt.args.salt...)
 			t.Logf("Decode() = %v", got)
 		})
 	}
