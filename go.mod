@@ -1,5 +1,5 @@
 module github.com/clong1995/go-id
 
-go 1.23
+go 1.24
 
-require github.com/clong1995/go-config v0.0.0-20241018013119-7c9eb1a671ac
+require github.com/clong1995/go-config v0.0.0-20250226023157-45462db4209f
