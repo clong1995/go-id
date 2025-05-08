@@ -98,6 +98,14 @@ func Decode(encoded string, salt ...int64) int64 {
 	return result
 }
 
+func Union(num int64, salt ...int64) string {
+	var s int64
+	if len(salt) != 0 && salt[0] != 0 {
+		s = salt[0]
+	}
+	return EncodeNoXor(num + s)
+}
+
 func xorKey() int64 {
 	randSource := rand.NewSource(time.Now().UnixNano())
 	randGen := rand.New(randSource)
