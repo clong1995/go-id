@@ -2,20 +2,21 @@ package gid
 
 import (
 	"fmt"
-	"github.com/clong1995/go-config"
 	"log"
 	"strconv"
-	"sync"
+	"sync/atomic"
 	"time"
+
+	pcolor "github.com/clong1995/go-ansi-color"
+	"github.com/clong1995/go-config"
 )
 
-//id的结构
-//| 46 bits - 时间戳部分 | 6 bits - 机器ID部分 | 12 bits - 序列号部分 |
-
+// id的结构
+// | 46 bits - 时间戳部分 | 6 bits - 机器ID部分 | 12 bits - 序列号部分 |
 const (
 	epoch int64 = 1136185445000
 
-	//timestampBits uint8 = 42
+	//timestampBits uint8 = 46
 	machineBits  uint8 = 6
 	sequenceBits uint8 = 12
 
@@ -24,6 +25,8 @@ const (
 
 	timestampShift = machineBits + sequenceBits
 	machineShift   = sequenceBits
+
+	maxBackoff = 5 * time.Second
 )
 
 var id *gid
@@ -36,46 +39,48 @@ func init() {
 	mid, err := strconv.ParseInt(machineID, 10, 64)
 	if err != nil {
 		log.Fatalln(err)
-		return
 	}
 
-	if id, err = newId(mid); err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("gid created %s success\n", machineID)
+	id = newId(mid)
+
+	log.Println(pcolor.Succ("gid created %s success，%d", machineID, ID()))
 }
 
 // Gid 结构体
 type gid struct {
-	mu        sync.Mutex
 	lastStamp int64
 	sequence  int64
 	machineID int64
 }
 
-// Generate 生成唯一ID
-func Generate() int64 {
-	id.mu.Lock()
-	defer id.mu.Unlock()
+// ID 生成唯一ID
+func ID() int64 {
+	for {
+		now := currentMillis()
+		lastStamp := atomic.LoadInt64(&id.lastStamp)
 
-	now := currentMillis()
-
-	if now == id.lastStamp {
-		id.sequence = (id.sequence + 1) & maxSequence
-		if id.sequence == 0 {
-			now = nextMillis(id.lastStamp)
+		if now < lastStamp {
+			// 时间回拨
+			now = nextMillis(lastStamp)
+			continue
 		}
-	} else {
-		id.sequence = 0
+
+		seq := atomic.LoadInt64(&id.sequence)
+		var newSeq int64
+		if now == lastStamp {
+			newSeq = (seq + 1) & maxSequence
+			if newSeq == 0 {
+				// 序列号溢出，等待下一毫秒
+				now = nextMillis(lastStamp)
+				continue
+			}
+		}
+
+		if atomic.CompareAndSwapInt64(&id.lastStamp, lastStamp, now) &&
+			atomic.CompareAndSwapInt64(&id.sequence, seq, newSeq) {
+			return ((now - epoch) << timestampShift) | (id.machineID << machineShift) | newSeq
+		}
 	}
-
-	id.lastStamp = now
-
-	i := ((now - epoch) << timestampShift) |
-		(id.machineID << machineShift) |
-		id.sequence
-
-	return i
 }
 
 // Extract 提取ID的时间戳、机器ID和序列号
@@ -87,23 +92,20 @@ func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
 }
 
 // Deterministic 直接生成特定时间和机器ID的ID
-func Deterministic(timestamp int64) (int64, error) {
-	if timestamp < epoch {
-		return 0, fmt.Errorf("timestamp must be greater than or equal to the epoch: %d", epoch)
-	}
-	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
-	return i, nil
+func Deterministic(timestamp int64) int64 {
+	i := ((timestamp) << timestampShift) | (id.machineID << machineShift)
+	return i
 }
 
-func newId(machineID int64) (*gid, error) {
+func newId(machineID int64) *gid {
 	if machineID < 0 || machineID > maxMachineID {
-		return nil, fmt.Errorf("machine ID must be between 0 and %d", maxMachineID)
+		log.Fatalln(fmt.Sprintf("machine ID must be between 0 and %d", maxMachineID))
 	}
 	return &gid{
 		lastStamp: 0,
 		sequence:  0,
 		machineID: machineID,
-	}, nil
+	}
 }
 
 // 当前毫秒时间戳
@@ -113,9 +115,17 @@ func currentMillis() int64 {
 
 // 获取下一个时间戳
 func nextMillis(lastStamp int64) int64 {
-	timestamp := currentMillis()
-	for timestamp <= lastStamp {
-		timestamp = currentMillis()
+	for {
+		now := currentMillis()
+		if now > lastStamp {
+			return now
+		}
+		// 计算需要等待的时间
+		waitTime := time.Duration(lastStamp-now+1) * time.Millisecond
+		if waitTime > maxBackoff {
+			time.Sleep(maxBackoff)
+		} else {
+			time.Sleep(waitTime)
+		}
 	}
-	return timestamp
 }

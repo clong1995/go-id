@@ -39,7 +39,7 @@ func TestDecode(t *testing.T) {
 		{
 			name: "解码",
 			args: args{
-				encoded: "ηOδδωk(⌂™", //157073671531581440
+				encoded: "ⅻ⊃⏼⏼0∐⏜ⅆ␉", //157073671531581440
 				salt:    []int64{157073571532583540},
 			},
 		},

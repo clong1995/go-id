@@ -1,7 +1,9 @@
 package gid
 
 import (
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestDeterministic(t *testing.T) {
@@ -23,11 +25,7 @@ func TestDeterministic(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Deterministic(tt.args.timestamp)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Deterministic() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := Deterministic(tt.args.timestamp)
 			t.Logf("Deterministic() got = %v", got)
 		})
 	}
@@ -66,8 +64,20 @@ func TestSnowflake_Generate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Generate()
-			t.Logf("Generate() = %v", got)
+			var wg sync.WaitGroup
+			for i := 0; i < 10; i++ {
+				wg.Add(1)
+				go func(i int, wg *sync.WaitGroup) {
+					defer wg.Done()
+					b := i == 7
+					if b {
+						time.Sleep(1 * time.Millisecond)
+					}
+					got := ID()
+					t.Logf("Generate() = %v => %v => %v", i, got, b)
+				}(i, &wg)
+			}
+			wg.Wait()
 		})
 	}
 }

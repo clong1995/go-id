@@ -1,8 +1,7 @@
 package gid
 
 import (
-	"math/rand"
-	"time"
+	"math/rand/v2"
 )
 
 var (
@@ -20,13 +19,13 @@ func init() { //
 
 // Encode 编码
 func Encode(num int64, salt ...int64) string {
-	var s int64
-	if len(salt) != 0 && salt[0] != 0 {
-		s = salt[0]
+	if num == 0 {
+		return ""
 	}
 
-	if num == 0 && s == 0 {
-		return ""
+	var s int64
+	if len(salt) != 0 {
+		s = salt[0]
 	}
 
 	num += s
@@ -35,8 +34,7 @@ func Encode(num int64, salt ...int64) string {
 	result := [9]rune{chars[xor+1]}
 	index := 1
 	for num > 0 {
-		encodedByte := num&0xFF ^ xor
-		result[index] = chars[encodedByte]
+		result[index] = chars[num&0xFF^xor]
 		num >>= 8
 		index++
 	}
@@ -107,7 +105,5 @@ func Union(num int64, salt ...int64) string {
 }
 
 func xorKey() int64 {
-	randSource := rand.NewSource(time.Now().UnixNano())
-	randGen := rand.New(randSource)
-	return int64(randGen.Intn(255))
+	return rand.Int64N(255)
 }
