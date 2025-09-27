@@ -18,18 +18,10 @@ func init() { //
 }
 
 // Encode 编码
-func Encode(num int64, salt ...int64) string {
+func Encode(num int64) string {
 	if num == 0 {
 		return ""
 	}
-
-	var s int64
-	if len(salt) != 0 {
-		s = salt[0]
-	}
-
-	num += s
-
 	xor := xorKey()
 	result := [9]rune{chars[xor+1]}
 	index := 1
@@ -57,14 +49,9 @@ func EncodeNoXor(num int64) string {
 }
 
 // Decode 解码
-func Decode(encoded string, salt ...int64) int64 {
+func Decode(encoded string) int64 {
 	if encoded == "" {
 		return 0
-	}
-
-	var s int64
-	if len(salt) != 0 && salt[0] != 0 {
-		s = salt[0]
 	}
 
 	runes := []rune(encoded)
@@ -90,8 +77,6 @@ func Decode(encoded string, salt ...int64) int64 {
 			result = result<<8 | maps[char]
 		}
 	}
-
-	result -= s
 
 	return result
 }
