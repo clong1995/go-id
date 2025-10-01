@@ -15,6 +15,7 @@ var (
 
 func init() { //
 	base := []rune("0a¢⋼⋴⊘b⊛⊝JKLMNOnₔ☊pCDoEFqlmGH⊙IST;☈UVW⌂₫⋄yzA3B45ef@çgκhcRdk≎⁏ℯ1⊟2ij6789⊞PQ⦙x°⁞৳X§Y⊠Z!∔$£₹ruv®wst⊡⊢⊣∅ℵαî≏↭()*៛ₓ-ƒ¬±∉∩€β␏γδεζηθι™¥⊆⊇⊥⊤⊕␎␐¶©Ⅷ␁∪Ⅸℜ∐Ⅎ⅄ⅅⅆⅇⅈⅉ⊗πρσ∂∞τ␍␑υφξο∇∈∑∏∫√∝∧∨⊂Ⅳ␌⏛∆ⅤχψωΘΛΣ⚲Ψ⊃ΩⅡ␇⏞Ⅲλ⏦μνⅥ⏝⚶Ⅶ⏚⏟␉ⅾ⏼⏽␃ⅻⅼⅽⅿ❍✔⊜␊ⅶ␂ⅷ⅌⅍ⅸ⏜ⅹⅺⅬⅭⅫ␅Ⅾ␋⅊⅋ⅎ⅏ⅠⅩ⊚Ⅺ␄⏣␈ⅵⅯⅰ⏿␀␆ⅱⅲ⏡ⅳⅴ⊻⏠⏧Ł")
+
 	seed := config.Value("SEED")
 	if seed == "" {
 		log.Fatalln("SEED")
@@ -24,6 +25,7 @@ func init() { //
 		log.Fatalln(err)
 	}
 	shuffle255(base, s)
+
 	for i, v := range base {
 		chars[i] = v
 		maps[v] = int64(i)

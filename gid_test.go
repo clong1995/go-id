@@ -69,6 +69,7 @@ func TestID(t *testing.T) {
 		})
 	}
 }
+
 func TestIDs(t *testing.T) {
 	tests := []struct {
 		name string
@@ -89,7 +90,7 @@ func TestIDs(t *testing.T) {
 						time.Sleep(1 * time.Millisecond)
 					}
 					got := ID()
-					t.Logf("Generate() = %v => %v => %v", i, got, b)
+					t.Logf("ID() = %v => %v => %v", i, got, b)
 				}(i, &wg)
 			}
 			wg.Wait()

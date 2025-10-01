@@ -1,8 +1,6 @@
 package gid
 
 import (
-	"fmt"
-	"log"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -34,17 +32,17 @@ var id *gid
 func init() {
 	machineID := config.Value("MACHINE ID")
 	if machineID == "" {
-		log.Fatalln("MACHINE ID not found")
+		pcolor.PrintFatal("MACHINE ID not found")
 	}
 	mid, err := strconv.ParseInt(machineID, 10, 64)
 	if err != nil {
-		log.Fatalln(err)
+		pcolor.PrintFatal(err.Error())
 	}
 
 	id = newId(mid)
-
 	num := ID()
-	log.Println(pcolor.Succ("gid created %s success, %d:%s", machineID, num, Encode(num)))
+
+	pcolor.PrintSucc("gid created %d success, %d:%s", mid, num, Encode(num))
 }
 
 // Gid 结构体
@@ -100,7 +98,7 @@ func Deterministic(timestamp int64) int64 {
 
 func newId(machineID int64) *gid {
 	if machineID < 0 || machineID > maxMachineID {
-		log.Fatalln(fmt.Sprintf("machine ID must be between 0 and %d", maxMachineID))
+		pcolor.PrintFatal("machine ID must be between 0 and %d", maxMachineID)
 	}
 	return &gid{
 		lastStamp: 0,
