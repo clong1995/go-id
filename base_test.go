@@ -21,7 +21,7 @@ func TestEncode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Encode(tt.args.num, tt.args.salt...)
+			got := Encode(tt.args.num)
 			t.Logf("Encode() = %v", got)
 		})
 	}
@@ -46,7 +46,7 @@ func TestDecode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Decode(tt.args.encoded, tt.args.salt...)
+			got := Decode(tt.args.encoded)
 			t.Logf("Decode() = %v", got)
 		})
 	}

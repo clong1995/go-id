@@ -1,7 +1,11 @@
 package gid
 
 import (
+	"log"
 	"math/rand/v2"
+	"strconv"
+
+	"github.com/clong1995/go-config"
 )
 
 var (
@@ -11,10 +15,29 @@ var (
 
 func init() { //
 	base := []rune("0a¢⋼⋴⊘b⊛⊝JKLMNOnₔ☊pCDoEFqlmGH⊙IST;☈UVW⌂₫⋄yzA3B45ef@çgκhcRdk≎⁏ℯ1⊟2ij6789⊞PQ⦙x°⁞৳X§Y⊠Z!∔$£₹ruv®wst⊡⊢⊣∅ℵαî≏↭()*៛ₓ-ƒ¬±∉∩€β␏γδεζηθι™¥⊆⊇⊥⊤⊕␎␐¶©Ⅷ␁∪Ⅸℜ∐Ⅎ⅄ⅅⅆⅇⅈⅉ⊗πρσ∂∞τ␍␑υφξο∇∈∑∏∫√∝∧∨⊂Ⅳ␌⏛∆ⅤχψωΘΛΣ⚲Ψ⊃ΩⅡ␇⏞Ⅲλ⏦μνⅥ⏝⚶Ⅶ⏚⏟␉ⅾ⏼⏽␃ⅻⅼⅽⅿ❍✔⊜␊ⅶ␂ⅷ⅌⅍ⅸ⏜ⅹⅺⅬⅭⅫ␅Ⅾ␋⅊⅋ⅎ⅏ⅠⅩ⊚Ⅺ␄⏣␈ⅵⅯⅰ⏿␀␆ⅱⅲ⏡ⅳⅴ⊻⏠⏧Ł")
+	seed := config.Value("SEED")
+	if seed == "" {
+		log.Fatalln("SEED")
+	}
+	s, err := strconv.ParseUint(seed, 10, 64)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	shuffle255(base, s)
 	for i, v := range base {
 		chars[i] = v
 		maps[v] = int64(i)
 	}
+}
+
+func shuffle255(arr []rune, seed uint64) {
+	r := rand.New(rand.NewPCG(seed, seed))
+	// Fisher-Yates 洗牌算法
+	for i := len(arr) - 1; i > 0; i-- {
+		j := r.IntN(i + 1)
+		arr[i], arr[j] = arr[j], arr[i]
+	}
+	return
 }
 
 // Encode 编码

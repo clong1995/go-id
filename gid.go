@@ -43,7 +43,8 @@ func init() {
 
 	id = newId(mid)
 
-	log.Println(pcolor.Succ("gid created %s success，%d", machineID, ID()))
+	num := ID()
+	log.Println(pcolor.Succ("gid created %s success, %d:%s", machineID, num, Encode(num)))
 }
 
 // Gid 结构体

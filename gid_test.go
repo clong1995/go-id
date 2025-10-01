@@ -54,7 +54,22 @@ func TestExtract(t *testing.T) {
 	}
 }
 
-func TestSnowflake_Generate(t *testing.T) {
+func TestID(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "生成唯一 ID",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ID()
+			t.Logf("Generate() = %d", got)
+		})
+	}
+}
+func TestIDs(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
