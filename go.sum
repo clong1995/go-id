@@ -2,6 +2,8 @@ github.com/clong1995/go-ansi-color v0.0.0-20250821034610-68ee7d7f3e94 h1:YODd+x7
 github.com/clong1995/go-ansi-color v0.0.0-20250821034610-68ee7d7f3e94/go.mod h1:VooDvIoinsUV4csF8TJeMU1A2UE953QZOGAjRBL94uI=
 github.com/clong1995/go-ansi-color v0.0.0-20251001144130-74afe030c906 h1:LE+HwDYFxnpG8amJco/DqdkYuNuIcWaHAtVQRbqwr/Y=
 github.com/clong1995/go-ansi-color v0.0.0-20251001144130-74afe030c906/go.mod h1:dRhHr7/WNxu+9oWDWiETzprMb77SxcHgdys0tLm6i4c=
+github.com/clong1995/go-ansi-color v0.0.0-20251001173023-49191cfd1ab8 h1:DHdpSZiRlEOD5dMFkNykKKLWanJrLo8YQ2FJCxAge6Y=
+github.com/clong1995/go-ansi-color v0.0.0-20251001173023-49191cfd1ab8/go.mod h1:dRhHr7/WNxu+9oWDWiETzprMb77SxcHgdys0tLm6i4c=
 github.com/clong1995/go-config v0.0.0-20250714045939-93f655c4ffa4 h1:JpBchFi599FYJBD8xnS1Ah7GKrlpjsKK1KyIbWkdhgQ=
 github.com/clong1995/go-config v0.0.0-20250714045939-93f655c4ffa4/go.mod h1:sWFwQ7v+tStLV2vKId7aBQzORq1ioZKCRXY8LX6GxRc=
 github.com/clong1995/go-config v0.0.0-20250904031006-87e9919cba93 h1:Ci9gGSst+nV6LcHQLZNuUBZYEbDC+5gjH4sgQ6wrDMk=
