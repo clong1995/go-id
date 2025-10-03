@@ -65,7 +65,7 @@ func TestID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ID()
-			t.Logf("Generate() = %d", got)
+			t.Logf("Generate() = %d : %s", got, Encode(got))
 		})
 	}
 }
@@ -75,7 +75,7 @@ func TestIDs(t *testing.T) {
 		name string
 	}{
 		{
-			name: "生成唯一 ID",
+			name: "生成 ID",
 		},
 	}
 	for _, tt := range tests {
@@ -90,7 +90,7 @@ func TestIDs(t *testing.T) {
 						time.Sleep(1 * time.Millisecond)
 					}
 					got := ID()
-					t.Logf("ID() = %v => %v => %v", i, got, b)
+					t.Logf("ID() %d : %d : %s", i, got, Encode(got))
 				}(i, &wg)
 			}
 			wg.Wait()

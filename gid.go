@@ -12,8 +12,6 @@ import (
 // id的结构
 // | 46 bits - 时间戳部分 | 6 bits - 机器ID部分 | 12 bits - 序列号部分 |
 const (
-	epoch int64 = 1136185445000
-
 	//timestampBits uint8 = 46
 	machineBits  uint8 = 6
 	sequenceBits uint8 = 12
@@ -27,21 +25,41 @@ const (
 	maxBackoff = 5 * time.Second
 )
 
+var epoch int64
 var id *gid
 
 func init() {
+	//
 	machineID := config.Value("MACHINE ID")
 	if machineID == "" {
 		pcolor.PrintFatal("MACHINE ID not found")
+		return
 	}
 	mid, err := strconv.ParseInt(machineID, 10, 64)
 	if err != nil {
 		pcolor.PrintFatal(err.Error())
+		return
 	}
+
+	//
+	epoch_ := config.Value("EPOCH")
+	if epoch_ == "" {
+		pcolor.PrintFatal("EPOCH not found")
+		return
+	}
+
+	t, err := time.ParseInLocation(time.DateTime, epoch_, time.Local)
+	if err != nil {
+		pcolor.PrintFatal(err.Error())
+		return
+	}
+
+	epoch = t.UnixMilli()
 
 	id = newId(mid)
 	num := ID()
 
+	shuffleBase()
 	pcolor.PrintSucc("gid created %d success, %d:%s", mid, num, Encode(num))
 }
 
