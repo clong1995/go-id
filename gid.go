@@ -29,38 +29,45 @@ var epoch int64
 var id *gid
 
 func init() {
+	var prefix = "gid"
 	//
 	machineID := config.Value("MACHINE ID")
 	if machineID == "" {
-		pcolor.PrintFatal("MACHINE ID not found")
+		pcolor.PrintFatal(prefix, "MACHINE ID not found")
 		return
 	}
 	mid, err := strconv.ParseInt(machineID, 10, 64)
 	if err != nil {
-		pcolor.PrintFatal(err.Error())
+		pcolor.PrintFatal(prefix, err.Error())
 		return
 	}
 
 	//
 	epoch_ := config.Value("EPOCH")
 	if epoch_ == "" {
-		pcolor.PrintFatal("EPOCH not found")
+		pcolor.PrintFatal(prefix, "EPOCH not found")
 		return
 	}
 
 	t, err := time.ParseInLocation(time.DateTime, epoch_, time.Local)
 	if err != nil {
-		pcolor.PrintFatal(err.Error())
+		pcolor.PrintFatal(prefix, err.Error())
 		return
 	}
 
 	epoch = t.UnixMilli()
 
+	if mid < 0 || mid > maxMachineID {
+		pcolor.PrintFatal(prefix, "machine ID must be between 0 and %d", maxMachineID)
+		return
+	}
+
 	id = newId(mid)
+
 	num := ID()
 
 	shuffleBase()
-	pcolor.PrintSucc("gid created %d success, %d:%s", mid, num, Encode(num))
+	pcolor.PrintSucc(prefix, "created %d success, %d : %s", mid, num, Encode(num))
 }
 
 // Gid 结构体
@@ -115,9 +122,6 @@ func Deterministic(timestamp int64) int64 {
 }
 
 func newId(machineID int64) *gid {
-	if machineID < 0 || machineID > maxMachineID {
-		pcolor.PrintFatal("machine ID must be between 0 and %d", maxMachineID)
-	}
 	return &gid{
 		lastStamp: 0,
 		sequence:  0,
