@@ -45,8 +45,7 @@ func init() {
 	//
 	epoch_ := config.Value("EPOCH")
 	if epoch_ == "" {
-		pcolor.PrintFatal(prefix, "EPOCH not found")
-		return
+		epoch_ = "2006-01-02 15:04:05"
 	}
 
 	t, err := time.ParseInLocation(time.DateTime, epoch_, time.Local)
