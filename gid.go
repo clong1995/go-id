@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	pcolor "github.com/clong1995/go-ansi-color"
+	"github.com/clong1995/go-ansi-color"
 	"github.com/clong1995/go-config"
 )
 
