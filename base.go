@@ -46,7 +46,7 @@ func Encode(num int64) string {
 // EncodeNoXor 非xor编码
 func EncodeNoXor(num int64) string {
 	if num == 0 {
-		return string(chars[0])
+		return ""
 	}
 	var result [8]rune
 	index := 0
