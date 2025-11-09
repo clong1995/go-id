@@ -12,3 +12,5 @@ github.com/clong1995/go-config v0.0.0-20250904031006-87e9919cba93 h1:Ci9gGSst+nV
 github.com/clong1995/go-config v0.0.0-20250904031006-87e9919cba93/go.mod h1:eQ2K6h/gc2yX9BBtm4/ExXPVlOsedRlXsDBJnEKjhts=
 github.com/clong1995/go-config v0.0.0-20251016024738-1d0e21986853 h1:BqfMb/U39Ylamq7z1udkt4UvyLmfLMkw6lUjOtlJ+6Y=
 github.com/clong1995/go-config v0.0.0-20251016024738-1d0e21986853/go.mod h1:z5is5krC0JXYgIXQ2ZwEsETEL1Wrb/fYuT1YXTTmGB4=
+github.com/clong1995/go-config v0.0.0-20251108135142-ae0453f3b68f h1:077OHs/cjNZwTOhr2sOuUmYfSg3SRdLEvHPvUeToYFQ=
+github.com/clong1995/go-config v0.0.0-20251108135142-ae0453f3b68f/go.mod h1:z5is5krC0JXYgIXQ2ZwEsETEL1Wrb/fYuT1YXTTmGB4=
