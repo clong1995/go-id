@@ -116,7 +116,7 @@ func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
 
 // Deterministic 直接生成特定时间和机器ID的ID
 func Deterministic(timestamp int64) int64 {
-	i := ((timestamp) << timestampShift) | (id.machineID << machineShift)
+	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
 	return i
 }
 
