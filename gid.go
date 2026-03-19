@@ -21,8 +21,6 @@ const (
 
 	timestampShift = machineBits + sequenceBits
 	machineShift   = sequenceBits
-
-	maxBackoff = 5 * time.Second
 )
 
 var epoch int64
@@ -61,7 +59,7 @@ func init() {
 		return
 	}
 
-	id = newId(mid)
+	id = newGid(mid)
 
 	num := ID()
 
@@ -69,39 +67,47 @@ func init() {
 	pcolor.PrintSucc(prefix, "created %d success, %d : %s", mid, num, Encode(num))
 }
 
-// Gid 结构体
-type gid struct {
+// state holds the atomic state of the generator.
+type state struct {
 	lastStamp int64
 	sequence  int64
+}
+
+// gid 结构体
+type gid struct {
+	state     atomic.Pointer[state]
 	machineID int64
 }
 
 // ID 生成唯一ID
 func ID() int64 {
 	for {
-		now := currentMillis()
-		lastStamp := atomic.LoadInt64(&id.lastStamp)
+		oldState := id.state.Load()
+		now := time.Now().UnixMilli()
 
-		if now < lastStamp {
-			// 时间回拨
-			now = nextMillis(lastStamp)
+		var newState state
+
+		if now < oldState.lastStamp {
+			// 时钟回拨，等待
+			time.Sleep(time.Duration(oldState.lastStamp-now) * time.Millisecond)
 			continue
 		}
 
-		seq := atomic.LoadInt64(&id.sequence)
-		var newSeq int64
-		if now == lastStamp {
-			newSeq = (seq + 1) & maxSequence
-			if newSeq == 0 {
+		if now == oldState.lastStamp {
+			newSequence := (oldState.sequence + 1) & maxSequence
+			if newSequence == 0 {
 				// 序列号溢出，等待下一毫秒
-				now = nextMillis(lastStamp)
+				time.Sleep(time.Millisecond)
 				continue
 			}
+			newState = state{lastStamp: now, sequence: newSequence}
+		} else {
+			// 新的毫秒
+			newState = state{lastStamp: now, sequence: 0}
 		}
 
-		if atomic.CompareAndSwapInt64(&id.lastStamp, lastStamp, now) &&
-			atomic.CompareAndSwapInt64(&id.sequence, seq, newSeq) {
-			return ((now - epoch) << timestampShift) | (id.machineID << machineShift) | newSeq
+		if id.state.CompareAndSwap(oldState, &newState) {
+			return ((newState.lastStamp - epoch) << timestampShift) | (id.machineID << machineShift) | newState.sequence
 		}
 	}
 }
@@ -115,37 +121,16 @@ func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
 }
 
 // Deterministic 直接生成特定时间和机器ID的ID
+// 它使用最大的序列号，以避免与 ID() 函数生成的ID冲突
 func Deterministic(timestamp int64) int64 {
-	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
+	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift) | maxSequence
 	return i
 }
 
-func newId(machineID int64) *gid {
-	return &gid{
-		lastStamp: 0,
-		sequence:  0,
+func newGid(machineID int64) *gid {
+	g := &gid{
 		machineID: machineID,
 	}
-}
-
-// 当前毫秒时间戳
-func currentMillis() int64 {
-	return time.Now().UnixMilli()
-}
-
-// 获取下一个时间戳
-func nextMillis(lastStamp int64) int64 {
-	for {
-		now := currentMillis()
-		if now > lastStamp {
-			return now
-		}
-		// 计算需要等待的时间
-		waitTime := time.Duration(lastStamp-now+1) * time.Millisecond
-		if waitTime > maxBackoff {
-			time.Sleep(maxBackoff)
-		} else {
-			time.Sleep(waitTime)
-		}
-	}
+	g.state.Store(&state{lastStamp: 0, sequence: 0})
+	return g
 }
