@@ -120,10 +120,9 @@ func Extract(id int64) (timestamp int64, machineID int, sequence int64) {
 	return timestamp, machineID, sequence
 }
 
-// Deterministic 直接生成特定时间和机器ID的ID
-// 它使用最大的序列号，以避免与 ID() 函数生成的ID冲突
+// Deterministic 直接生成特定时间和机器ID的ID，序列号是0，仅用于时间查询
 func Deterministic(timestamp int64) int64 {
-	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift) | maxSequence
+	i := ((timestamp - epoch) << timestampShift) | (id.machineID << machineShift)
 	return i
 }
 
