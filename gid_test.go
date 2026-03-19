@@ -42,7 +42,7 @@ func TestExtract(t *testing.T) {
 		{
 			name: "提取ID的时间戳、机器ID和序列号",
 			args: args{
-				id: 156846391473475584,
+				id: 1744348770168506225,
 			},
 		},
 	}
