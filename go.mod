@@ -1,8 +1,10 @@
 module github.com/clong1995/go-id
 
-go 1.25
+go 1.26
 
 require (
-	github.com/clong1995/go-ansi-color v0.0.0-20251016014428-61ea4bba5de6
-	github.com/clong1995/go-config v0.0.0-20251108135142-ae0453f3b68f
+	github.com/clong1995/go-ansi-color v0.0.0-20260314102151-cbbdfbe952a8
+	github.com/clong1995/go-config v0.0.0-20260315070032-d84683978967
 )
+
+require github.com/pkg/errors v0.9.1 // indirect
