@@ -1,7 +1,6 @@
 package gid
 
 import (
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -29,24 +28,19 @@ var id *gid
 func init() {
 	var prefix = "gid"
 	//
-	machineID := config.Value("MACHINE ID")
-	if machineID == "" {
+	machineID, exists := config.Value[int64]("MACHINE ID")
+	if !exists {
 		pcolor.PrintFatal(prefix, "MACHINE ID not found")
-		return
-	}
-	mid, err := strconv.ParseInt(machineID, 10, 64)
-	if err != nil {
-		pcolor.PrintFatal(prefix, err.Error())
 		return
 	}
 
 	//
-	epoch_ := config.Value("EPOCH")
-	if epoch_ == "" {
+	epoch_, exists := config.Value[string]("EPOCH")
+	if !exists {
 		epoch_ = "2006-01-02 15:04:05"
 	}
 
-	t, err := time.ParseInLocation(time.DateTime, epoch_, time.Local)
+	t, err := time.ParseInLocation(time.DateTime, epoch_, time.UTC)
 	if err != nil {
 		pcolor.PrintFatal(prefix, err.Error())
 		return
@@ -54,60 +48,60 @@ func init() {
 
 	epoch = t.UnixMilli()
 
-	if mid < 0 || mid > maxMachineID {
+	if machineID < 0 || machineID > maxMachineID {
 		pcolor.PrintFatal(prefix, "machine ID must be between 0 and %d", maxMachineID)
 		return
 	}
 
-	id = newGid(mid)
+	id = newGid(machineID)
 
 	num := ID()
 
 	shuffleBase()
-	pcolor.PrintSucc(prefix, "created %d success, %d : %s", mid, num, Encode(num))
-}
-
-// state holds the atomic state of the generator.
-type state struct {
-	lastStamp int64
-	sequence  int64
+	pcolor.PrintSucc(prefix, "created %d success, %d : %s", machineID, num, Encode(num))
 }
 
 // gid 结构体
 type gid struct {
-	state     atomic.Pointer[state]
+	state     atomic.Uint64
 	machineID int64
 }
 
 // ID 生成唯一ID
 func ID() int64 {
 	for {
-		oldState := id.state.Load()
+		oldPacked := id.state.Load()
+		oldStamp := int64(oldPacked >> sequenceBits)
+		oldSeq := int64(oldPacked & uint64(maxSequence))
 		now := time.Now().UnixMilli()
 
-		var newState state
+		var newStamp int64
+		var newSeq int64
 
-		if now < oldState.lastStamp {
+		if now < oldStamp {
 			// 时钟回拨，等待
-			time.Sleep(time.Duration(oldState.lastStamp-now) * time.Millisecond)
+			time.Sleep(time.Duration(oldStamp-now) * time.Millisecond)
 			continue
 		}
 
-		if now == oldState.lastStamp {
-			newSequence := (oldState.sequence + 1) & maxSequence
-			if newSequence == 0 {
+		if now == oldStamp {
+			newSeq = (oldSeq + 1) & maxSequence
+			if newSeq == 0 {
 				// 序列号溢出，等待下一毫秒
 				time.Sleep(time.Millisecond)
 				continue
 			}
-			newState = state{lastStamp: now, sequence: newSequence}
+			newStamp = now
 		} else {
 			// 新的毫秒
-			newState = state{lastStamp: now, sequence: 0}
+			newStamp = now
+			newSeq = 0
 		}
 
-		if id.state.CompareAndSwap(oldState, &newState) {
-			return ((newState.lastStamp - epoch) << timestampShift) | (id.machineID << machineShift) | newState.sequence
+		newPacked := (uint64(newStamp) << sequenceBits) | uint64(newSeq)
+
+		if id.state.CompareAndSwap(oldPacked, newPacked) {
+			return ((newStamp - epoch) << timestampShift) | (id.machineID << machineShift) | newSeq
 		}
 	}
 }
@@ -130,6 +124,6 @@ func newGid(machineID int64) *gid {
 	g := &gid{
 		machineID: machineID,
 	}
-	g.state.Store(&state{lastStamp: 0, sequence: 0})
+	g.state.Store(0)
 	return g
 }

@@ -29,15 +29,13 @@ func shuffleBase() {
 
 // Encode 编码
 func Encode(num int64) string {
-	if num == 0 {
-		return ""
-	}
 	xor := xorKey()
 	result := [9]rune{chars[xor+1]}
 	index := 1
-	for num > 0 {
-		result[index] = chars[num&0xFF^xor]
-		num >>= 8
+	unum := uint64(num)
+	for i := 0; i < 8; i++ {
+		result[index] = chars[(unum&0xFF)^uint64(xor)]
+		unum >>= 8
 		index++
 	}
 	return string(result[:index])
@@ -45,14 +43,15 @@ func Encode(num int64) string {
 
 // EncodeNoXor 非xor编码
 func EncodeNoXor(num int64) string {
-	if num == 0 {
-		return ""
-	}
 	var result [8]rune
 	index := 0
-	for num > 0 {
-		result[index] = chars[num&0xFF]
-		num >>= 8
+	unum := uint64(num)
+	if unum == 0 {
+		return string([]rune{chars[0]})
+	}
+	for unum > 0 {
+		result[index] = chars[unum&0xFF]
+		unum >>= 8
 		index++
 	}
 	return string(result[:index])
@@ -76,19 +75,19 @@ func Decode(encoded string) int64 {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
-	var result int64
+	var result uint64
 
 	if isXor {
 		for _, char := range runes {
-			result = result<<8 | maps[char] ^ xor
+			result = result<<8 | uint64(maps[char]^xor)
 		}
 	} else {
 		for _, char := range runes {
-			result = result<<8 | maps[char]
+			result = result<<8 | uint64(maps[char])
 		}
 	}
 
-	return result
+	return int64(result)
 }
 
 func Union(num int64, salt ...int64) string {
